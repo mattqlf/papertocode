@@ -12,7 +12,7 @@ def warp_pad(
     output_w: int = 227,
     padding: int = 16,
 ) -> tc.Tensor:
-    """Warp a region of an image specified by a bounding box + padding to a specified dimension
+    """Warp a region of an image specified by a bounding box + padding to a specified dimension and then subtract mean from image
 
     Args:
         image: tensor with shape (C, H, W)
@@ -24,6 +24,8 @@ def warp_pad(
     Returns:
         A transformed image (tensor) with shape (C, output_h, output_w)
     """
+    r_mean, g_mean, b_mean = tc.mean(image.float(), dim=[1, 2])
+
     image = cv2.copyMakeBorder(
         image.permute(1, 2, 0).numpy(),
         padding,
@@ -31,7 +33,7 @@ def warp_pad(
         padding,
         padding,
         cv2.BORDER_CONSTANT,
-        value=0,
+        value=(int(b_mean), int(g_mean), int(r_mean)),
     )
 
     image = image[
@@ -40,7 +42,9 @@ def warp_pad(
 
     image = cv2.resize(image, (output_w, output_h), interpolation=cv2.INTER_LINEAR)
     image = tc.from_numpy(image).permute(2, 0, 1)
-
+    image = image - tc.Tensor([r_mean, g_mean, b_mean]).resize(3, 1, 1)
+    image = image / 255
+    debug.matrix_verbose(image)
     return image
 
 
