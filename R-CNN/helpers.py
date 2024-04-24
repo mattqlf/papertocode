@@ -44,7 +44,6 @@ def warp_pad(
     image = tc.from_numpy(image).permute(2, 0, 1)
     image = image - tc.Tensor([r_mean, g_mean, b_mean]).resize(3, 1, 1)
     image = image / 255
-    debug.matrix_verbose(image)
     return image
 
 

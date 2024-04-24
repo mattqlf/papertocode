@@ -17,7 +17,10 @@ def matrix_verbose(matrix: Union[np.ndarray, tc.Tensor]) -> None:
     """Print matrix, shape, and type"""
 
     assert type(matrix) == np.ndarray or type(matrix) == tc.Tensor
-    print(f"The matrix has shape {matrix.shape} and type {matrix.dtype}\n", matrix)
+    print(
+        matrix,
+        f"\n The matrix has shape {matrix.shape} and type {matrix.dtype}. The minimum value is {matrix.min()} and the maximum value is {matrix.max()}",
+    )
 
 
 def show_selective_search(

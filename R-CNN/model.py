@@ -49,7 +49,7 @@ class CNN(nn.Module):
 
         self.fc1 = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(in_features=20480, out_features=self.feature_dim),
+            nn.Linear(in_features=1024, out_features=self.feature_dim),  # 20480
             nn.ReLU(inplace=True),
         )
 
