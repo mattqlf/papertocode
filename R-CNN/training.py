@@ -45,10 +45,10 @@ def train_val(
 
         # Training
         model.train()
-        avg_train_loss, avg_train_score = 0.0
-        train_progress = tqdm(enumerate(train_loader))
+        avg_train_loss, avg_train_score = 0.0, 0.0
+        train_progress = tqdm(enumerate(train_loader), total = len(train_loader))
 
-        for i, images, labels in train_progress:
+        for i, (images, labels) in train_progress:
             images, labels = images.to(device), labels.to(device)
 
             with amp.autocast():
@@ -63,7 +63,7 @@ def train_val(
             score = metric(outputs, labels)
 
             avg_train_loss = (avg_train_loss * i + loss.item()) / (i + 1)
-            avg_train_score = (avg_train_score * i + score) / (i + 1)
+            avg_train_score = (avg_train_score * i + score.item()) / (i + 1)
             train_progress.set_description(
                 f"Average Train Loss: {avg_train_loss} and Average Train Score {avg_train_score}"
             )
@@ -73,11 +73,11 @@ def train_val(
 
         # Validation
         model.eval()
-        avg_val_loss, avg_val_score = 0.0
-        val_progress = tqdm(enumerate(val_loader))
+        avg_val_loss, avg_val_score = 0.0, 0.0
+        val_progress = tqdm(enumerate(val_loader), total = len(val_loader))
 
         with tc.no_grad():
-            for i, images, labels in val_progress:
+            for i, (images, labels) in val_progress:
                 images, labels = images.to(device), labels.to(device)
                 outputs = model(images)
                 loss = loss_fn(outputs, labels)
@@ -85,7 +85,7 @@ def train_val(
                 score = metric(outputs, labels)
 
                 avg_val_loss = (avg_val_loss * i + loss.item()) / (i + 1)
-                avg_val_score = (avg_val_score * i + score) / (i + 1)
+                avg_val_score = (avg_val_score * i + score.item()) / (i + 1)
 
         results.append((avg_train_loss, avg_val_loss, avg_train_score, avg_val_score))
         tc.save(model.state_dict(), f"./checkpoints/{CONFIG.MODEL}_{epoch + 1}.pth.tar")
