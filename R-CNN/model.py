@@ -1,14 +1,13 @@
 import torch as tc
 from torch import nn
 
-
 class CNN(nn.Module):
     """Implementation of CNN as described in [Krizhevsky et al. 2012] with a few modifications:
     - Replace Local Response Normalization with Batch Normalization
     - Do not use architecture that allows training on multiple GPUs as described in section 3.2
     """
 
-    def __init__(self, feature_dim: int = 4096, classes: int = 0):
+    def __init__(self, feature_dim: int = 4096, classes: int = 0) -> None:
         """
         Args:
             feature_dim: the amount of neurons in the FC layers, dim of feature vector
@@ -84,3 +83,29 @@ class CNN(nn.Module):
             x = self.fc3(x)
 
         return x
+
+class AlexFineTuned(nn.Module):
+    """AlexNet with classifier head modified to satisfy given number of classes
+    """
+    def __init__(self, classes: int, model: nn.Module) -> None:
+        """
+        Args:
+            classes: number of classes to classify
+            model: pretrained alexnet model
+        """
+        super().__init__()
+        self.classes = classes
+
+        self.features = nn.Sequential(list(model.children())[0])
+        self.avgpool = nn.Sequential(list(model.children())[1])
+        self.classifer = nn.Sequential(*list(list(model.children())[2].children())[:5], nn.Linear(in_features=4096, out_features=20))
+
+    def forward(self, x: tc.Tensor) -> tc.Tensor:
+        """
+        Args:
+            x: tensor with shape (N, C, H, W) or (C, H, W)
+        """
+        if len(x.shape) == 3:
+            x = x.unsqueeze(0)  # if (C, H, W) -> (1, C, H, W)
+        
+        pass
