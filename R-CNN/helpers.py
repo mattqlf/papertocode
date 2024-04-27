@@ -4,6 +4,7 @@ import debug
 from selective_search import selective_search, box_filter
 from tqdm import tqdm
 
+class_map = {'boat': 0, 'person': 1, 'motorbike': 2, 'sheep': 3, 'horse': 4, 'diningtable': 5, 'aeroplane': 6, 'bicycle': 7, 'bus': 8, 'train': 9, 'sofa': 10, 'cat': 11, 'bird': 12, 'car': 13, 'cow': 14, 'pottedplant': 15, 'chair': 16, 'tvmonitor': 17, 'dog': 18, 'bottle': 19}
 
 def warp_pad(
     image: tc.Tensor,
@@ -43,7 +44,6 @@ def warp_pad(
     image = cv2.resize(image, (output_w, output_h), interpolation=cv2.INTER_LINEAR)
     image = tc.from_numpy(image).permute(2, 0, 1)
     image = image - tc.Tensor([r_mean, g_mean, b_mean]).resize(3, 1, 1)
-    image = image / 255
     return image
 
 
@@ -69,3 +69,14 @@ def extract_regions(
         regions.append(warp_pad(image, box))
 
     return regions
+
+def get_class(label: dict) -> int:
+    """Returns an integer based on the image class. If multiple objects in the label, uses the first one.
+    
+    Args:
+        label: a dictionary in the form of VOC detection .xml annotations
+    
+    Returns:
+        Number based on a class map
+    """
+    return class_map[label['annotation']['object'][0]['name']]
